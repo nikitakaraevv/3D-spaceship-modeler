@@ -11,17 +11,18 @@ function main() {
         renderer: null,
         controls: null,
         dessin: true,
-        centre: {x: 0, y:0, z:0},
+        centre: {x: 1, y:1, z:1},
         scale: {x: 0.5, y:0.5, z:0.5},
-        mult: {x: 2, y:2, z:2},
         engines: []
     };
 
     // Les données associées au picking
     const pickingData = {
+        currentKey:null,
         enabled: false,  
         engineCreation: false,         // Mode picking en cours ou désactivé (CTRL enfoncé)
-        enableDragAndDrop: false, // Drag and drop en cours ou désactivé
+        enableDragAndDrop: false,
+        enableScaling: false, // Drag and drop en cours ou désactivé
         selectableObjects: [],    // Les objets selectionnables par picking
         selectedObject: null,     // L'objet actuellement selectionné
         selectedPlane: {p:null,n:null}, // Le plan de la caméra au moment de la selection. Plan donné par une position p, et une normale n.
@@ -208,14 +209,23 @@ function onKeyDown(event, pickingData, sceneThreeJs) {
 
     const ctrlPressed = event.ctrlKey;
     const shiftPressed = event.shiftKey;
+    const keyCode = event.which;
     // Relachement de ctrl : activation du mode picking
     if ( ctrlPressed ) {
+        pickingData.currentKey = "CTRL";
         pickingData.enabled = true;
         sceneThreeJs.controls.enabled = false;
     }
-    if ( shiftPressed ) {
+    else if ( shiftPressed ) {
+        pickingData.currentKey = "SHIFT";
+        sceneThreeJs.controls.enabled = false;
         pickingData.engineCreation = true;
         pickingData.currentEnginePoints=[];
+    }
+    else if ( keyCode === 90  ) {
+        pickingData.currentKey = "Z";
+        pickingData.enabled = true;
+        sceneThreeJs.controls.enabled = false;
     }
 
 }
@@ -224,16 +234,23 @@ function onKeyUp(event, pickingData,sceneThreeJs) {
 
     const ctrlPressed = event.ctrlKey;
     const shiftPressed = event.shiftKey;
+    const keyCode = event.which;
+
+
     // Relachement de ctrl : fin du picking actuel
-    if ( ctrlPressed===false ) {
+    if ( ctrlPressed===false && ((pickingData.currentKey==="CTRL") || (pickingData.currentKey==="Z"))) {
+        pickingData.currentKey = null;
         pickingData.enabled = false;
         pickingData.enableDragAndDrop = false;
+        pickingData.enableScaling = false;
         sceneThreeJs.controls.enabled = true;
         pickingData.selectedObject = null;
         pickingData.visualRepresentation.sphereSelection.visible = false;
         pickingData.visualRepresentation.sphereTranslation.visible = false;
     }
-    if ( shiftPressed===false) {
+    if ( shiftPressed===false  && pickingData.currentKey==="SHIFT") {
+        pickingData.currentKey = null;
+        sceneThreeJs.controls.enabled = true;
         pickingData.engineCreation = false;
         if (pickingData.currentEnginePoints.length>2) {
             sceneThreeJs.engines.push(pickingData.currentEnginePoints);
@@ -247,6 +264,7 @@ function onKeyUp(event, pickingData,sceneThreeJs) {
             var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
             mesh.position.set(0,0,0);
             sceneThreeJs.sceneGraph.add(mesh);
+            pickingData.selectableObjects.push(mesh);
         }
     
 
@@ -259,10 +277,7 @@ function onKeyUp(event, pickingData,sceneThreeJs) {
 function onMouseDown(event,raycaster,pickingData,screenSize,camera,dessin,sceneThreeJs) {
 
 	// Gestion du picking
-    if( pickingData.enabled===true && dessin===true) { // activation si la touche CTRL est enfoncée
-        sceneThreeJs.mult.x = 1/sceneThreeJs.scale.x;
-        sceneThreeJs.mult.y = 1/sceneThreeJs.scale.y;
-        sceneThreeJs.mult.z = 1/sceneThreeJs.scale.z;
+    if( pickingData.enabled===true && dessin===true ) { // activation si la touche CTRL est enfoncée
         // Coordonnées du clic de souris
         const xPixel = event.clientX;
         const yPixel = event.clientY;
@@ -292,11 +307,16 @@ function onMouseDown(event,raycaster,pickingData,screenSize,camera,dessin,sceneT
             const sphereSelection = pickingData.visualRepresentation.sphereSelection;
             sphereSelection.position.copy( pickingData.selectedPlane.p );
             sphereSelection.visible = true;
-            pickingData.enableDragAndDrop = true;
+            if (pickingData.engineCreation===false && pickingData.currentKey==="CTRL"){
+                pickingData.enableDragAndDrop = true;
+            }
+            else if (pickingData.engineCreation===false && pickingData.currentKey==="Z"){
+                pickingData.enableScaling = true;
+            }
 
         }
     }
-    if(pickingData.engineCreation) {
+    if(pickingData.engineCreation===true) {
         const xPixel = event.clientX;
         const yPixel = event.clientY;
         const x =  2*xPixel/screenSize.w-1;
@@ -312,6 +332,7 @@ function onMouseDown(event,raycaster,pickingData,screenSize,camera,dessin,sceneT
 
 function onMouseUp(event,pickingData) {
     pickingData.enableDragAndDrop = false;
+    pickingData.enableScaling = false;
 }
 
 function onMouseMove( event, pickingData, screenSize, sceneThreeJs ) {
@@ -359,7 +380,7 @@ function onMouseMove( event, pickingData, screenSize, sceneThreeJs ) {
         
 
     }*/
-    if( pickingData.enableDragAndDrop===true) {
+    if( pickingData.enableDragAndDrop===true && pickingData.engineCreation===false ) {
 
         // Coordonnées de la position de la souris
         const xPixel = event.clientX;
@@ -376,19 +397,46 @@ function onMouseMove( event, pickingData, screenSize, sceneThreeJs ) {
         const p0 = sceneThreeJs.camera.position;
         const d = selectedPoint.clone().sub( p0 );
         
-        //const normalMatrix = new THREE.Matrix3().getNormalMatrix( pickingData.selectedObject.matrixWorld );
-
-
-        //const newNormal = normal.clone().applyMatrix3( normalMatrix ).normalize();
-        //pickingData.selectedObject.scale/2.0-
-        //console.log(pickingData.selectedObject.position);
+        // Intersection entre le rayon 3D et le plan de la camera
+        const p = pickingData.selectedPlane.p;
+        const n = pickingData.selectedPlane.n;
+        // tI = <p-p0,n> / <d,n>
+        const tI = ( (p.clone().sub(p0)).dot(n) ) / ( d.dot(n) );
+        // pI = p0 + tI d
+        const pI = (d.clone().multiplyScalar(tI)).add(p0); // le point d'intersection
         
-        //console.log(pickingData.selectedObject.scale);
-        //console.log(pickingData.selectedObject.position );
+        const objectCentre = pickingData.selectedObject.position;
+        
+        const translation = pI.clone().sub( p );
+        
+        pickingData.selectedObject.translateX( translation.x );
+        pickingData.selectedObject.translateY( translation.y );
+        pickingData.selectedObject.translateZ( translation.z );
 
+        pickingData.selectedPlane.p.add( translation );
 
-        const centre = sceneThreeJs.centre;
-        const scale = sceneThreeJs.scale;
+        pickingData.visualRepresentation.sphereTranslation.visible = true;
+        pickingData.visualRepresentation.sphereTranslation.position.copy(p);
+        
+
+    }
+    else if( pickingData.enableScaling===true && pickingData.engineCreation===false ) {
+
+        // Coordonnées de la position de la souris
+        const xPixel = event.clientX;
+        const yPixel = event.clientY;
+
+        const x =  2*xPixel/screenSize.w-1;
+        const y = -2*yPixel/screenSize.h+1;
+
+        // Projection inverse passant du point 2D sur l'écran à un point 3D
+        const selectedPoint = Vector3(x, y, 0.5  );//valeur de z après projection
+        selectedPoint.unproject( sceneThreeJs.camera );
+
+        // Direction du rayon passant par le point selectionné
+        const p0 = sceneThreeJs.camera.position;
+        const d = selectedPoint.clone().sub( p0 );
+        
         // Intersection entre le rayon 3D et le plan de la camera
         const p = pickingData.selectedPlane.p;
         const n = pickingData.selectedPlane.n;
@@ -404,36 +452,33 @@ function onMouseMove( event, pickingData, screenSize, sceneThreeJs ) {
         //console.log(pI);
         //console.log(objectCentre);
         const translation = pI.clone().sub( p );
-        if (Math.abs(Math.abs(p.x*sceneThreeJs.scale.x*sceneThreeJs.mult.x-(objectCentre.x+centre.x))-sceneThreeJs.scale.x/2.0)<=0.008){
+        if ((Math.abs(translation.x)>Math.abs(translation.y))&&(Math.abs(translation.x)>Math.abs(translation.z))) {
             console.log("x");
             var mul = 0.99;
-            
+
             if (translation.x > 0){
                 mul = 1.01;
             }
-            sceneThreeJs.scale.x=sceneThreeJs.scale.x*mul;
-            pickingData.selectedObject.scale.x=sceneThreeJs.scale.x;
-            
+            pickingData.selectedObject.scale.x*=mul;
+
         }
-        else if (Math.abs(Math.abs(p.y*sceneThreeJs.scale.y*sceneThreeJs.mult.y-(objectCentre.y+centre.y))-sceneThreeJs.scale.y/2.0)<=0.008){
+        else if ((Math.abs(translation.y)>Math.abs(translation.x))&&(Math.abs(translation.y)>Math.abs(translation.z))){
             console.log("y");
             var mul = 0.99;
-            
+
             if (translation.y > 0){
                 mul = 1.01;
             }
-            sceneThreeJs.scale.y=sceneThreeJs.scale.y*mul;
-            pickingData.selectedObject.scale.y=sceneThreeJs.scale.y;
+            pickingData.selectedObject.scale.y*=mul;
         }
-        else if (Math.abs(Math.abs(p.z*sceneThreeJs.scale.z*sceneThreeJs.mult.z-(objectCentre.z+centre.z))-sceneThreeJs.scale.z/2.0)<=0.008){
+        else if ((Math.abs(translation.z)>Math.abs(translation.y))&&(Math.abs(translation.z)>Math.abs(translation.x))){
             console.log("z");
             var mul = 0.99;
-            
+
             if (translation.z > 0){
                 mul = 1.01;
             }
-            sceneThreeJs.scale.z=sceneThreeJs.scale.z*mul;
-            pickingData.selectedObject.scale.z=sceneThreeJs.scale.z;
+            pickingData.selectedObject.scale.z*=mul;
         }
         //console.log(Math.abs(Math.abs(p.z*sceneThreeJs.scale.z*sceneThreeJs.mult-(objectCentre.z+centre.z))-sceneThreeJs.scale.z/2.0));
         //console.log(pickingData.selectedObject);
@@ -453,7 +498,7 @@ function onMouseMove( event, pickingData, screenSize, sceneThreeJs ) {
         //pickingData.selectedObject.translateY( translation.y );
         //pickingData.selectedObject.translateZ( translation.z );
 
-        //pickingData.selectedPlane.p.add( translation );
+        pickingData.selectedPlane.p.add( translation );
 
         pickingData.visualRepresentation.sphereTranslation.visible = true;
         //pickingData.visualRepresentation.sphereTranslation.position.copy(p);
