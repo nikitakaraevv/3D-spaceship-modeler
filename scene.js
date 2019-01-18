@@ -14,16 +14,18 @@ function main() {
         centre: {x: 0, y:0, z:0},
         scale: {x: 0.5, y:0.5, z:0.5},
         mult: {x: 2, y:2, z:2},
+        engines: []
     };
 
     // Les données associées au picking
     const pickingData = {
-        enabled: false,           // Mode picking en cours ou désactivé (CTRL enfoncé)
+        enabled: false,  
+        engineCreation: false,         // Mode picking en cours ou désactivé (CTRL enfoncé)
         enableDragAndDrop: false, // Drag and drop en cours ou désactivé
         selectableObjects: [],    // Les objets selectionnables par picking
         selectedObject: null,     // L'objet actuellement selectionné
         selectedPlane: {p:null,n:null}, // Le plan de la caméra au moment de la selection. Plan donné par une position p, et une normale n.
-
+        currentEnginePoints: [],
         // Les représentations visuelles associées au picking
         visualRepresentation: {
             sphereSelection:null,    // Une sphère montrant le point d'intersection au moment du picking
@@ -63,8 +65,8 @@ function main() {
     document.addEventListener( 'mousemove', wrapperMouseMove );
 
     // Fonction de rappels pour le clavier: activation/désactivation du picking par CTRL
-    const wrapperKeyDown = function(event) { onKeyDown(event,pickingData,sceneThreeJs.controls); };
-    const wrapperKeyUp = function(event) { onKeyUp(event,pickingData,sceneThreeJs.controls); };
+    const wrapperKeyDown = function(event) { onKeyDown(event,pickingData,sceneThreeJs); };
+    const wrapperKeyUp = function(event) { onKeyUp(event,pickingData,sceneThreeJs); };
     document.addEventListener( 'keydown', wrapperKeyDown );
     document.addEventListener( 'keyup', wrapperKeyUp );
 
@@ -92,7 +94,7 @@ function init3DObjects(sceneThreeJs, pickingData) {
     cube.castShadow = true;
     sceneGraph.add(cube);
     pickingData.selectableObjects.push(cube); // Ajout du cube en tant qu'élément selectionnable
-    console.log(cube.scale.x);
+    //console.log(cube.scale.x);
 
     // *********************** //
     /// Une sphère montrant la position selectionnée
@@ -114,51 +116,72 @@ function init3DObjects(sceneThreeJs, pickingData) {
 
 
 
+    
+    /*enginePoints=[];
+    enginePoints.push( new THREE.Vector2 (   1,  0.1 ) );
+    enginePoints.push( new THREE.Vector2 (  1,  0.2 ) );
+    enginePoints.push( new THREE.Vector2 (  1.1,  0.3 ) );
+    enginePoints.push( new THREE.Vector2 (  1.2,  0.3 ) );
+    enginePoints.push( new THREE.Vector2 (  1.3,  0.2 ) );
+    enginePoints.push( new THREE.Vector2 (  1.3,  0.1 ) );
+    enginePoints.push( new THREE.Vector2 (  1.2,  0 ) );
+     enginePoints.push( new THREE.Vector2 (  1.1,  0 ) );
+     enginePoints.push( new THREE.Vector2 (   1,  0.1 ) );
+     sceneThreeJs.engines.push(enginePoints);
+     */
+    for(let i = 0; i < sceneThreeJs.engines.length; i++){
+        var enginePoints = [];
+        for(let j = 0; j < sceneThreeJs.engines[i].length; j++){
+            enginePoints.push(sceneThreeJs.engines[i][j]);
+        }
+        
+        var starShape = new THREE.Shape( enginePoints );//enginePoints
+
+        var extrudeSettings = { amount: 0.2, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: 0.1, bevelThickness: 0.4 };
+
+        var geometry = new THREE.ExtrudeGeometry( starShape, extrudeSettings );
+
+        var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+        mesh.position.set(0,0,0);
+        sceneGraph.add(mesh);
+    
+    }
 
 
-    var starPoints = [];
+    /*var curve = new THREE.CubicBezierCurve(
+    enginePoints[0],
+    enginePoints[1],
+    enginePoints[2],
+    enginePoints[0]
+    );
+    */
+    //var points = curve.getPoints( 5 );
+    //var geometry = new THREE.BufferGeometry().setFromPoints( points );
 
-    starPoints.push( new THREE.Vector2 (   0,  0.5 ) );
-    starPoints.push( new THREE.Vector2 (  0.1,  0.1 ) );
-    starPoints.push( new THREE.Vector2 (  0.4,  0.1 ) );
-    starPoints.push( new THREE.Vector2 (  0.2, -0.1 ) );
-    starPoints.push( new THREE.Vector2 (  0.3, -0.5 ) );
-    starPoints.push( new THREE.Vector2 (   0, -0.2 ) );
-    starPoints.push( new THREE.Vector2 ( -0.3, -0.5 ) );
-    starPoints.push( new THREE.Vector2 ( -0.2, -0.1 ) );
-    starPoints.push( new THREE.Vector2 ( -0.4,  0.1 ) );
-    starPoints.push( new THREE.Vector2 ( -0.1,  0.1 ) );
+    //var material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
 
-    var starShape = new THREE.Shape( starPoints );
+    // Create the final object to add to the scene
+    var curveObject = new THREE.Line( geometry, material );
+    sceneGraph.add(curveObject);
+    
+    var starShape = new THREE.Shape( enginePoints );//enginePoints
 
-    var extrusionSettings = {
-        size: 2, height: 2, curveSegments: 3,
-        bevelThickness: 1, bevelSize: 1, bevelEnabled: false,
-        material: 1, extrudeMaterial: 1
-    };
+    var extrudeSettings = { amount: 0.2, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: 0.1, bevelThickness: 0.4 };
 
-    var starGeometry = new THREE.ExtrudeGeometry( starShape, extrusionSettings );
+    var geometry = new THREE.ExtrudeGeometry( starShape, extrudeSettings );
 
-    var materialFront = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-    var materialSide = new THREE.MeshBasicMaterial( { color: 0xff8800 } );
-    var materialArray = [ materialFront, materialSide ];
-    var starMaterial = new THREE.MeshFaceMaterial(materialArray);
-
-    var star = new THREE.Mesh( starGeometry, starMaterial );
-    star.position.set(0,1,0);
-    //sceneGraph.add(star);
-
+    var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+    mesh.position.set(0,0,0);
+    sceneGraph.add(mesh);
+    
     // add a wireframe to model
-    var wireframeTexture = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } ); 
-    var star = new THREE.Mesh( starGeometry, wireframeTexture );
-    star.position.set(0,1,0);
-    //sceneGraph.add(star);
+    
+   
+    
 
 
 
-
-
-
+    //Earth
     var geometry   = new THREE.SphereGeometry(4, 32, 32);
     var material  = new THREE.MeshPhongMaterial();
 
@@ -169,43 +192,64 @@ function init3DObjects(sceneThreeJs, pickingData) {
     earthMesh.position.set( -10, -10, -10 );
     
     sceneGraph.add(earthMesh);
-   
+
+    //Space and stars
     var geometry2  = new THREE.SphereGeometry(20, 32, 32);
-    // create the material, using a texture of startfield
     var material2  = new THREE.MeshBasicMaterial();
     material2.map = THREE.ImageUtils.loadTexture('images/milkyway.jpg');
     material.side = THREE.BackSide;
-    // create the mesh based on geometry and material
     var mesh  = new THREE.Mesh(geometry2, material2);
   
     sceneGraph.add(mesh);
 }
 
 
-function onKeyDown(event, pickingData, orbitControl) {
+function onKeyDown(event, pickingData, sceneThreeJs) {
 
     const ctrlPressed = event.ctrlKey;
-
+    const shiftPressed = event.shiftKey;
     // Relachement de ctrl : activation du mode picking
     if ( ctrlPressed ) {
         pickingData.enabled = true;
-        orbitControl.enabled = false;
+        sceneThreeJs.controls.enabled = false;
+    }
+    if ( shiftPressed ) {
+        pickingData.engineCreation = true;
+        pickingData.currentEnginePoints=[];
     }
 
 }
 
-function onKeyUp(event, pickingData, orbitControl) {
+function onKeyUp(event, pickingData,sceneThreeJs) {
 
     const ctrlPressed = event.ctrlKey;
-
+    const shiftPressed = event.shiftKey;
     // Relachement de ctrl : fin du picking actuel
     if ( ctrlPressed===false ) {
         pickingData.enabled = false;
         pickingData.enableDragAndDrop = false;
-        orbitControl.enabled = true;
+        sceneThreeJs.controls.enabled = true;
         pickingData.selectedObject = null;
         pickingData.visualRepresentation.sphereSelection.visible = false;
         pickingData.visualRepresentation.sphereTranslation.visible = false;
+    }
+    if ( shiftPressed===false) {
+        pickingData.engineCreation = false;
+        if (pickingData.currentEnginePoints.length>2) {
+            sceneThreeJs.engines.push(pickingData.currentEnginePoints);
+       
+            var engineShape = new THREE.Shape( pickingData.currentEnginePoints );//enginePoints
+
+            var extrudeSettings = { amount: 0.2, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: 0.1, bevelThickness: 0.4 };
+
+            var geometry = new THREE.ExtrudeGeometry( engineShape, extrudeSettings );
+
+            var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+            mesh.position.set(0,0,0);
+            sceneThreeJs.sceneGraph.add(mesh);
+        }
+    
+
     }
 
 }
@@ -252,6 +296,16 @@ function onMouseDown(event,raycaster,pickingData,screenSize,camera,dessin,sceneT
 
         }
     }
+    if(pickingData.engineCreation) {
+        const xPixel = event.clientX;
+        const yPixel = event.clientY;
+        const x =  2*xPixel/screenSize.w-1;
+        const y = -2*yPixel/screenSize.h+1;
+        console.log(pickingData.currentEnginePoints);
+        pickingData.currentEnginePoints.push( new THREE.Vector2 (x,  y));
+    
+
+    }
 
 }
 
@@ -292,11 +346,7 @@ function onMouseMove( event, pickingData, screenSize, sceneThreeJs ) {
         console.log(pI);
         
         const translation = pI.clone().sub( p );
-        if(pI.x> 1.0 || pI.y>1.0 || pI.z>1.0 || pI.x< 0 || pI.y<0 || pI.z<0){
-            translation.x = 0
-            translation.y = 0
-            translation.z = 0
-        }
+          
         // Translation de l'objet et de la représentation visuelle
         pickingData.selectedObject.translateX( translation.x );
         pickingData.selectedObject.translateY( translation.y );
@@ -385,7 +435,7 @@ function onMouseMove( event, pickingData, screenSize, sceneThreeJs ) {
             sceneThreeJs.scale.z=sceneThreeJs.scale.z*mul;
             pickingData.selectedObject.scale.z=sceneThreeJs.scale.z;
         }
-        console.log(Math.abs(Math.abs(p.z*sceneThreeJs.scale.z*sceneThreeJs.mult-(objectCentre.z+centre.z))-sceneThreeJs.scale.z/2.0));
+        //console.log(Math.abs(Math.abs(p.z*sceneThreeJs.scale.z*sceneThreeJs.mult-(objectCentre.z+centre.z))-sceneThreeJs.scale.z/2.0));
         //console.log(pickingData.selectedObject);
         // Translation à appliquer
         //console.log(pI);
