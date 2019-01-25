@@ -7,7 +7,7 @@ return {
 
     // Création et ajout de lumière dans le graphe de scène
 insertLight: function(sceneGraph,p) {
-        const spotLight = new THREE.SpotLight(0xffffff,0.9);
+        const spotLight = new THREE.SpotLight(0xffffff,0.8);
         spotLight.position.copy(p);
 
         spotLight.castShadow = true;
@@ -18,7 +18,7 @@ insertLight: function(sceneGraph,p) {
     },
 
 insertAmbientLight: function(sceneGraph) {
-    const ambient = new THREE.AmbientLight( 0xffffff, 0.1 );
+    const ambient = new THREE.AmbientLight( 0xffffff, 0.2 );
     sceneGraph.add(ambient);
 },
 
@@ -33,7 +33,7 @@ createCamera: function(x,y,z) {
 
     // Initialisation du moteur de rendu
 createRenderer : function(){
-        const renderer = new THREE.WebGLRenderer({antialias:true} );
+        const renderer = new THREE.WebGLRenderer( {antialias:true} );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setClearColor(0xffffff,1.0);
         renderer.setSize( window.innerWidth, window.innerHeight );
