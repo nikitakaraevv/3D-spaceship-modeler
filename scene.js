@@ -4,24 +4,34 @@ main();
 
 function main() {
 
+
+
     const sceneThreeJs = {
         sceneGraph: null,
         camera: null,
         renderer: null,
         controls: null
+        //,        mirrorCubeCamera: null,        mirrorCube: null
+
     };
 
     // Les paramètres de l'interface graphique
     const guiParam = {
         //primitiveType: "cube", // Le nom de la primitive à afficher
         x:0, y:0, z:0, // La translation à appliquer sur la primitive
-	hauteur: 0,
-	volume: 4, //addition de parametre volume
-	landing: false,
+	       hauteur: 0,
+	        volume: 4, //addition de parametre volume
+	         landing: false,
     };
 
+
+
+
+
+
     initEmptyScene(sceneThreeJs);
-    init3DObjects(sceneThreeJs.sceneGraph);
+
+    init3DObjects(sceneThreeJs);
 
     initGui(guiParam, sceneThreeJs); // Initialisation de l'interface
     updatedGui(guiParam, sceneThreeJs); //Initialisation de la visualisation en cohérence avec l'interface
@@ -39,7 +49,7 @@ function updatedGui(guiParam,sceneThreeJs) {
     // Récupération de la primitive à afficher
     //const sphere = sceneThreeJs.sceneGraph.getObjectByName("sphere");
     const cube = sceneThreeJs.sceneGraph.getObjectByName("cube");
-    const ground = sceneThreeJs.sceneGraph.getObjectByName("ground");
+    //const ground = sceneThreeJs.sceneGraph.getObjectByName("ground");
 
     var x0 = 0.25; //besoin de mettre des sizes vraies
     var y0 = 0.25;
@@ -59,7 +69,7 @@ function updatedGui(guiParam,sceneThreeJs) {
     // Changement dhauteur du plan
     const translation2 = Vector3(0,guiParam.hauteur/10,0);
     const p1 = p10.clone().add(translation2);
-    ground.position.copy(p1);
+    //ground.position.copy(p1);
 
     // Changement de volume de cub
     const cubeGeometry1 = primitive.Cube(Vector3(0,0,0), 0.25*guiParam.volume);
@@ -68,6 +78,8 @@ function updatedGui(guiParam,sceneThreeJs) {
     cube1.castShadow = true;
     //cube.visible = false;
     cube1.visible = true;
+
+    //EXPERIMENTS WITH mirrorCubeCamera
 
     //console.log(guiParam.volume);
     //volumm = volumm * guiParam.volume;
@@ -80,7 +92,6 @@ function updatedGui(guiParam,sceneThreeJs) {
 
     // Changement de couleur
     console.log(cube)
-
 }
 
 function initGui(guiParam,sceneThreeJs) {
@@ -139,103 +150,120 @@ function show_image(src, width, height, alt) {
 // Initialise les objets composant la scène 3D
 
 
-function init3DObjects(sceneGraph, dataControler) {
+function init3DObjects(sceneThreeJs, dataControler) {
 
     const elementsToAdd = [];
     const textureLoader = new THREE.TextureLoader();
 
-    const groundGeometry = primitive.Quadrangle(Vector3(0,0,0),Vector3(0,0,1),Vector3(1,0,1),Vector3(1,0,0));
-    const ground = new THREE.Mesh(groundGeometry,MaterialRGB(1,1,1));
+    //const groundGeometry = primitive.Quadrangle(Vector3(0,0,0),Vector3(0,0,1),Vector3(1,0,1),Vector3(1,0,0));
+    //const ground = new THREE.Mesh(groundGeometry,MaterialRGB(1,1,1));
 
 
 
-    ground.name="ground";
-    elementsToAdd.push(ground);
-    sceneGraph.add(ground);
+
+    //ground.name="ground";
+    //elementsToAdd.push(ground);
+    //sceneThreeJs.sceneGraph.add(ground);
 
     const cubeGeometry = primitive.Cube(Vector3(0,0,0), 0.01);
     const cube = new THREE.Mesh(cubeGeometry,MaterialRGB(1,0,0));
     cube.name="cube";
     elementsToAdd.push(cube);
-    sceneGraph.add(cube);
+    sceneThreeJs.sceneGraph.add(cube);
 
 
+
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //var mirrorCube, mirrorCubeCamera;
+    //EXPERIMENTS WITH mirrorCube
+    // var cubeGeom = new THREE.CubeGeometry(100, 100, 10, 1, 1, 1);
+    // sceneThreeJs.mirrorCubeCamera = new THREE.CubeCamera( 0.1, 5000, 512 );
+    // console.log(THREE.CubeCamera)
+    // // mirrorCubeCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
+    // sceneThreeJs.sceneGraph.add( sceneThreeJs.mirrorCubeCamera );
+    // var mirrorCubeMaterial = new THREE.MeshBasicMaterial( { envMap: sceneThreeJs.mirrorCubeCamera.renderTarget } );
+    // sceneThreeJs.mirrorCube = new THREE.Mesh( cubeGeom, mirrorCubeMaterial );
+    // sceneThreeJs.mirrorCube.position.set(-75,50,0);
+    // //sceneThreeJs.mirrorCubeCamera.position = sceneThreeJs.mirrorCube.position;
+    // sceneThreeJs.mirrorCubeCamera = {position: sceneThreeJs.mirrorCube.position}
+    // sceneThreeJs.sceneGraph.add(sceneThreeJs.mirrorCube);
+    ////////////////////////////////////////////////////////////////////////////////////
     const cylinderGeometry = primitive.Cylinder( Vector3(0,0,0), Vector3(0,0,0.5),0.10 );
     const cylinder = new THREE.Mesh( cylinderGeometry,MaterialRGB(0.4,0.9,1) );
     cylinder.name = "cylinder";
     elementsToAdd.push(cylinder);
-    //sceneGraph.add(cylinder);
+    //sceneThreeJs.sceneGraph.add(cylinder);
     //cube.add(cylinder);
     //cylinder.add(cube);
 
     const cylinderGeometry1 = primitive.Cylinder( Vector3(0.22,0,-0.25), Vector3(0.22,0,0.25),0.10 );
     const cylinder1 = new THREE.Mesh( cylinderGeometry1,MaterialRGB(0.4,0.9,1) );
     cylinder1.name = "cylinder1";
-    //sceneGraph.add(cylinder1);
+    //sceneThreeJs.sceneGraph.add(cylinder1);
     //cube.add(cylinder1);
 
     const cylinderGeometry2 = primitive.Cylinder( Vector3(-0.22,0,-0.25), Vector3(-0.22,0,0.25),0.10 );
     const cylinder2 = new THREE.Mesh( cylinderGeometry2,MaterialRGB(0.4,0.9,1) );
     cylinder2.name = "cylinder2";
-    //sceneGraph.add(cylinder2);
+    //sceneThreeJs.sceneGraph.add(cylinder2);
     //cube.add(cylinder2);
 
 		const cylinderGeometry3 = primitive.Cylinder( Vector3(-0.22,0,-0.25), Vector3(-0.22,0,0.25),0.10 );
     const cylinder3 = new THREE.Mesh( cylinderGeometry3,MaterialRGB(0.4,0.9,1) );
     cylinder3.name = "cylinder3";
     cylinder3.position.set(-0.23,0.18,-0.65);
-		//sceneGraph.add(cylinder3);
+		//sceneThreeJs.sceneGraph.add(cylinder3);
     //cube.add(cylinder3);
 
 		const cylinderGeometry4 = primitive.Cylinder( Vector3(-0.22,0,-0.25), Vector3(-0.22,0,0.25),0.10 );
     const cylinder4 = new THREE.Mesh( cylinderGeometry4,MaterialRGB(0.4,0.9,1) );
     cylinder4.name = "cylinder4";
     cylinder4.position.set(0.67,0.18,-0.65);
-		//sceneGraph.add(cylinder4);
+		//sceneThreeJs.sceneGraph.add(cylinder4);
     //cube.add(cylinder4);
 
 		var texture	= THREE.ImageUtils.loadTexture('lensflare0_alpha.png');
 		// do the material
 		var geometry	= new THREE.PlaneGeometry(1,1)
 		var material	= new THREE.MeshBasicMaterial({
-			color		: 0x00ffff,
+			color		: 0x000fff,
 			map		: texture,
 			side		: THREE.DoubleSide,
 			blending	: THREE.AdditiveBlending,
-			opacity		: 5,
+			opacity		: 10,
 			depthWrite	: false,
 			transparent	: true
 		})
-		var fire	= new THREE.Mesh(geometry, material)
-		fire.scale.multiplyScalar(0.75)
-		fire.position.x = 0;
-		fire.position.y = 0;
-		//cube.add(fire);
-		sceneGraph.add(fire);
+		var fire1	= new THREE.Mesh(geometry, material)
+		fire1.scale.multiplyScalar(0.75)
+		fire1.position.x = -0.5;
+		fire1.position.y = 0.2;
+    fire1.position.z = -0.67
+		sceneThreeJs.sceneGraph.add(fire1);
+    cube.add(fire1);
+
+    var fire2	= new THREE.Mesh(geometry, material)
+		fire2.scale.multiplyScalar(0.75)
+		fire2.position.x = 0.5;
+		fire2.position.y = 0.2;
+    fire2.position.z = -0.67
+		sceneThreeJs.sceneGraph.add(fire2);
+    cube.add(fire2);
 
     //var geometry = new THREE.TetrahedronGeometry(0.5, 0);
     //var material = new THREE.MeshBasicMaterial({color:0x000000});
     //var tetr = new THREE.Mesh(geometry, material);
-    //sceneGraph.add(tetr);
+    //sceneThreeJs.sceneGraph.add(tetr);
 
     //const figgeom = primitive.Quadrangle( Vector3(1,1,0), Vector3(0,1,1), Vector3(0,0,0), Vector3(1,1,1) );
     //const fig = new THREE.Mesh( figgeom,MaterialRGB(0.4,0.9,1) );
     //fig.name = "fig";
     //fig.position.set(0.67,0.18,-0.65);
-		//sceneGraph.add(fig);
+		//sceneThreeJs.sceneGraph.add(fig);
     //cube.add(fig);
 
 
-		var forward = new THREE.Shape();
-		forward.moveTo( -0.13, 0 );
-		forward.bezierCurveTo( -0.13,-0.05 , 0.13, -0.05, 0.13, 0 );
-		var extrudeSettings = { amount: 0.5, bevelEnabled: false }//, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
-		var geometry = new THREE.ExtrudeGeometry( forward, extrudeSettings );
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
-		mesh.rotateX(Math.PI/180*30);
-		mesh.position.set(0,0.2,0);
-		//sceneGraph.add(mesh);
-		//cube.add(mesh);
 
     var backward = new THREE.Shape();
 		backward.moveTo( -0.13, 0 );
@@ -245,7 +273,7 @@ function init3DObjects(sceneGraph, dataControler) {
 		var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
 		mesh.rotateX(Math.PI/180*30);
 		mesh.position.set(0,0.2,-0.6);
-		//sceneGraph.add(mesh);
+		//sceneThreeJs.sceneGraph.add(mesh);
 		//cube.add(mesh);
 
 		var up = new THREE.Shape();
@@ -256,10 +284,10 @@ function init3DObjects(sceneGraph, dataControler) {
 		var m = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
 		//m.rotateX(Math.PI/180*30);
 		m.position.set(0,0.2,-0.5);
-		//sceneGraph.add(m);
+		//sceneThreeJs.sceneGraph.add(m);
 		//cube.add(m);
 
-    console.log(sceneGraph);
+    console.log(sceneThreeJs.sceneGraph);
 
     var up0 = new THREE.Shape();
     up0.moveTo( -0.135, 0 );
@@ -269,7 +297,7 @@ function init3DObjects(sceneGraph, dataControler) {
     var m3 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
     //m.rotateX(Math.PI/180*30);
     m3.position.set(0,0.17,-0.2);
-    //sceneGraph.add(m3);
+    //sceneThreeJs.sceneGraph.add(m3);
     //cube.add(m3);
 
 		var up1 = new THREE.Shape();
@@ -280,7 +308,7 @@ function init3DObjects(sceneGraph, dataControler) {
 		var m1 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
 		//m.rotateX(Math.PI/180*30);
 		m1.position.set(0,0.23,-0.6);
-		sceneGraph.add(m1);
+		sceneThreeJs.sceneGraph.add(m1);
 		cube.add(m1);
 
 		var up2 = new THREE.Shape();
@@ -291,7 +319,7 @@ function init3DObjects(sceneGraph, dataControler) {
 		var m2 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
 		//m.rotateX(Math.PI/180*30);
 		m2.position.set(0,0.23,-0.65);
-		sceneGraph.add(m2);
+		sceneThreeJs.sceneGraph.add(m2);
 		cube.add(m2);
 
 
@@ -303,7 +331,7 @@ function init3DObjects(sceneGraph, dataControler) {
 		var m4 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
 		//m.rotateX(Math.PI/180*30);
 		m4.position.set(-0.467,0.23,-0.65);
-		sceneGraph.add(m4);
+		sceneThreeJs.sceneGraph.add(m4);
 		cube.add(m4);
 
 		var up4 = new THREE.Shape();
@@ -314,7 +342,7 @@ function init3DObjects(sceneGraph, dataControler) {
 		var m5 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
 		//m.rotateX(Math.PI/180*30);
 		m5.position.set(0.467,0.23,-0.65);triangleMesh
-		sceneGraph.add(m5);
+		sceneThreeJs.sceneGraph.add(m5);
 		cube.add(m5);
 
 		var side1 = new THREE.Shape();
@@ -325,7 +353,7 @@ function init3DObjects(sceneGraph, dataControler) {
 		var m6 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
 		m6.rotateZ(Math.PI/180*90);
 		m6.position.set(0.13,0.07,-0.395);
-		//sceneGraph.add(m6);
+		//sceneThreeJs.sceneGraph.add(m6);
 		//cube.add(m6);
 
 		var side2 = new THREE.Shape();
@@ -336,7 +364,7 @@ function init3DObjects(sceneGraph, dataControler) {
 		var m7 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
 		m7.rotateZ(Math.PI/180*90);
 		m7.position.set(-0.13,0.07,-0.395);
-		//sceneGraph.add(m7);
+		//sceneThreeJs.sceneGraph.add(m7);
 		//cube.add(m7);
 
     var triangleGeometry = new THREE.Geometry();
@@ -346,8 +374,8 @@ function init3DObjects(sceneGraph, dataControler) {
     triangleGeometry.vertices.push(new THREE.Vector3(0.09,  -0.2, 0.3));
     triangleGeometry.vertices.push(new THREE.Vector3(0.15, -0.15, -0.3));
     triangleGeometry.vertices.push(new THREE.Vector3(0.2, 0.15, -0.3));
-    triangleGeometry.vertices.push(new THREE.Vector3(0.15,0.15,-0.7));
-    triangleGeometry.vertices.push(new THREE.Vector3(-0.15,0.15,-0.7));
+    triangleGeometry.vertices.push(new THREE.Vector3(0.15,0.15,-0.78));
+    triangleGeometry.vertices.push(new THREE.Vector3(-0.15,0.15,-0.78));
 
 
     triangleGeometry.faces.push(new THREE.Face3(0, 1, 2));
@@ -368,22 +396,30 @@ function init3DObjects(sceneGraph, dataControler) {
     triangleGeometry.faces.push(new THREE.Face3(0, 1, 3));
     triangleGeometry.faces.push(new THREE.Face3(4, 3, 1));
 
-    //var texture1	= THREE.ImageUtils.loadTexture('1.png');
+    ////  var texture1	= THREE.ImageUtils.loadTexture('1.png');
 
-    var triangleMaterial = new THREE.MeshBasicMaterial({
-      map: new THREE.TextureLoader().load('lava.jpg'),
-      side: THREE.DoubleSide
+    //var triangleMaterial = new THREE.MeshBasicMaterial({
+    //  map: new THREE.TextureLoader().load('lava.jpg'),
+    //  side: THREE.DoubleSide
+    //});
+
+    //var material = new THREE.MeshFaceMaterial(triangleMaterial);
+
+    //var triangleMesh = new THREE.Mesh(triangleGeometry, material);
+    ////  triangleMesh.material.map(new THREE.TextureLoader().load('1.png'));
+    ////  triangleMesh.material.needsUpdate = true;
+    ////  triangleMesh.rotateY(Math.PI/180*270)
+
+
+    var triangleMat = new THREE.MeshBasicMaterial({
+      color:0x808080,
+      side:THREE.DoubleSide
     });
 
-    var material = new THREE.MeshFaceMaterial(triangleMaterial);
-
-    var triangleMesh = new THREE.Mesh(triangleGeometry, material);
-    //triangleMesh.material.map(new THREE.TextureLoader().load('1.png'));
-    //triangleMesh.material.needsUpdate = true;
-    //triangleMesh.rotateY(Math.PI/180*270)
+    var triangleMesh = new THREE.Mesh(triangleGeometry, triangleMat);
     triangleMesh.position.set(0, 0.07, 0.14);
 
-    sceneGraph.add(triangleMesh);
+    sceneThreeJs.sceneGraph.add(triangleMesh);
     cube.add(triangleMesh);
 
     var ailesGeom = new THREE.Geometry();
@@ -436,25 +472,140 @@ function init3DObjects(sceneGraph, dataControler) {
 
 
     var ailesMat = new THREE.MeshBasicMaterial({
-      color:0x808080,
+      color:0x809999,
       side:THREE.DoubleSide
     });
 
     var ailesMesh = new THREE.Mesh(ailesGeom, ailesMat);
-    sceneGraph.add(ailesMesh);
+    sceneThreeJs.sceneGraph.add(ailesMesh);
     cube.add(ailesMesh);
 
-    }
+    var forward = new THREE.Shape();
+    forward.moveTo( -0.11, 0 );
+    forward.bezierCurveTo( -0.11,-0.05 , 0.11, -0.05, 0.11, 0 );
+    var extrudeSettings = { amount: 0.45, bevelEnabled: false }//, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+    var geometry = new THREE.ExtrudeGeometry( forward, extrudeSettings );
+    var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+    mesh.rotateX(Math.PI/180*30);
+    //mesh.rotateZ(Math.PI/180*180);
+    mesh.position.set(0,0.2,-0.1);
+    sceneThreeJs.sceneGraph.add(mesh);
+    cube.add(mesh);
+
+    var up_no_wings = new THREE.Shape();
+		up_no_wings.moveTo( -0.18, 0 );
+		up_no_wings.bezierCurveTo( -0.18,-0.05 , 0.18, -0.05, 0.18, 0 );
+		var extrudeSettings = { amount: 0.1, bevelEnabled: false }//, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+		var geometry = new THREE.ExtrudeGeometry( up_no_wings, extrudeSettings );
+		var m10 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+		//m.rotateX(Math.PI/180*30);
+		m10.position.set(0,0.23,-0.48);
+		sceneThreeJs.sceneGraph.add(m10);
+		cube.add(m10);
+
+    var up_no_wings1 = new THREE.Shape();
+		up_no_wings1.moveTo( -0.14, 0 );
+		up_no_wings1.bezierCurveTo( -0.14,-0.05 , 0.14, -0.05, 0.14, 0 );
+		var extrudeSettings = { amount: 0.1, bevelEnabled: false }//, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+		var geometry = new THREE.ExtrudeGeometry( up_no_wings1, extrudeSettings );
+		var m11 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+		//m.rotateX(Math.PI/180*30);
+		m11.position.set(0,0.23,-0.36);
+		sceneThreeJs.sceneGraph.add(m11);
+		cube.add(m11);
+
+    var up_no_wings2 = new THREE.Shape();
+		up_no_wings2.moveTo( -0.1, 0 );
+		up_no_wings2.bezierCurveTo( -0.1,-0.05 , 0.1, -0.05, 0.1, 0 );
+		var extrudeSettings = { amount: 0.08, bevelEnabled: false }//, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+		var geometry = new THREE.ExtrudeGeometry( up_no_wings2, extrudeSettings );
+		var m12 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+		//m.rotateX(Math.PI/180*30);
+		m12.position.set(0,0.23,-0.24);
+		sceneThreeJs.sceneGraph.add(m12);
+		cube.add(m12);
+
+    var for_ailes_Geom = new THREE.Geometry();
+    for_ailes_Geom.vertices.push(new THREE.Vector3(-0.2,0,0));//0
+    for_ailes_Geom.vertices.push(new THREE.Vector3(-0.16,0.01,0.2));//1
+    for_ailes_Geom.vertices.push(new THREE.Vector3(-0.1,0,0));//2
+    for_ailes_Geom.vertices.push(new THREE.Vector3(-0.16,0.05,0));//3
+    for_ailes_Geom.vertices.push(new THREE.Vector3(0,0.01,0));//4
+    for_ailes_Geom.vertices.push(new THREE.Vector3(0.1,0,0));//5
+    for_ailes_Geom.vertices.push(new THREE.Vector3(0.2,0,0));//6
+    for_ailes_Geom.vertices.push(new THREE.Vector3(0.16,0.01,0.2));//7
+    for_ailes_Geom.vertices.push(new THREE.Vector3(0.16,0.05,0));//8
+
+
+    for_ailes_Geom.faces.push(new THREE.Face3(0,1,2));
+    for_ailes_Geom.faces.push(new THREE.Face3(0,1,3));
+    for_ailes_Geom.faces.push(new THREE.Face3(1,2,3));
+    for_ailes_Geom.faces.push(new THREE.Face3(2,3,4));
+    for_ailes_Geom.faces.push(new THREE.Face3(2,4,5));
+    for_ailes_Geom.faces.push(new THREE.Face3(4,5,8));
+    for_ailes_Geom.faces.push(new THREE.Face3(5,8,7));
+    for_ailes_Geom.faces.push(new THREE.Face3(8,7,6));
+    for_ailes_Geom.faces.push(new THREE.Face3(5,6,7));
+    for_ailes_Geom.faces.push(new THREE.Face3(0,3,2));
+    for_ailes_Geom.faces.push(new THREE.Face3(5,6,8));
+    for_ailes_Geom.faces.push(new THREE.Face3(3,2,5));
+    for_ailes_Geom.faces.push(new THREE.Face3(2,5,8));
+    var for_ailes_Mat = new THREE.MeshBasicMaterial({
+      color:0x809999,
+      side:THREE.DoubleSide
+    });
+
+    var for_ailes_Mesh = new THREE.Mesh(for_ailes_Geom, for_ailes_Mat);
+    for_ailes_Mesh.position.set(0,-0.10,0.25)
+    sceneThreeJs.sceneGraph.add(for_ailes_Mesh);
+    cube.add(for_ailes_Mesh);
+  }
 
 
 
 // Demande le rendu de la scène 3D
 function render( sceneThreeJs ) {
-    sceneThreeJs.renderer.render(sceneThreeJs.sceneGraph, sceneThreeJs.camera);
+    ////////////////////////////////////////////////////////////////////////////
+    sceneThreeJs.renderer.render(sceneThreeJs.sceneGraph, sceneThreeJs.camera);//Space background is a large sphere
+    // var spacetex = THREE.ImageUtils.loadTexture("https://s3-us-west-2.amazonaws.com/s.cdpn.io/96252/space.jpg");
+    // var spacesphereGeo = new THREE.SphereGeometry(20,20,20);
+    // var spacesphereMat = new THREE.MeshPhongMaterial();
+    // spacesphereMat.map = spacetex;
+    //
+    // var spacesphere = new THREE.Mesh(spacesphereGeo,spacesphereMat);
+    //
+    // //spacesphere needs to be double sided as the camera is within the spacesphere
+    // spacesphere.material.side = THREE.DoubleSide;
+    //
+    // spacesphere.material.map.wrapS = THREE.RepeatWrapping;
+    // spacesphere.material.map.wrapT = THREE.RepeatWrapping;
+    // spacesphere.material.map.repeat.set( 5, 3);
+    //
+    // sceneThreeJs.sceneGraph.add(spacesphere);
+    //
+    // //create two spotlights to illuminate the scene
+    // var spotLight = new THREE.SpotLight( 0xffffff );
+    // spotLight.position.set( -40, 60, -10 );
+    // spotLight.intensity = 2;
+    // sceneThreeJs.sceneGraph.add( spotLight );
+    //
+    // var spotLight2 = new THREE.SpotLight( 0x5192e9 );
+    // spotLight2.position.set( 40, -60, 30 );
+    // spotLight2.intensity = 1.5;
+    // sceneThreeJs.sceneGraph.add( spotLight2 );
+    //////////////////////////////////////////////////////
+    // sceneThreeJs.mirrorCube.visible = false;
+    // //sceneThreeJs.mirrorCubeCamera.updateCubeMap( render, sceneThreeJs.sceneGraph );
+    // console.log(sceneThreeJs.mirrorCubeCamera)
+    // var obj = sceneThreeJs.mirrorCubeCamera.updateCubeMap(render, sceneThreeJs.sceneGraph);
+    // sceneThreeJs.mirrorCubeCamera = obj;
+    // //sceneThreeJs.mirrorCubeCamera = {updateCubeMap: }
+    // sceneThreeJs.mirrorCube.visible = true;
 }
 
 function animate(sceneThreeJs,guiParam, time) {
 
+    const cube = sceneThreeJs.sceneGraph.getObjectByName("cube");
     const cylinder1 = sceneThreeJs.sceneGraph.getObjectByName("cylinder1");
     const cylinder2 = sceneThreeJs.sceneGraph.getObjectByName("cylinder2");
 		const cylinder3 = sceneThreeJs.sceneGraph.getObjectByName("cylinder3");
@@ -473,7 +624,10 @@ function animate(sceneThreeJs,guiParam, time) {
 				console.log(t);
         }
     }
-    //guiParam.landing = false;
+    //IT WORKS JUST UNCOMMENTE IT
+    //cube.position.set( 2*Math.cos(t),0, 2*Math.sin(t));
+    //cube.setRotationFromAxisAngle(Vector3(0,1,0), -t)
+
 
     render(sceneThreeJs);
 }
@@ -486,6 +640,9 @@ function initEmptyScene(sceneThreeJs) {
 
     sceneThreeJs.sceneGraph = new THREE.Scene();
 
+    var texture = new THREE.TextureLoader().load( "space.jpg" );
+    sceneThreeJs.sceneGraph.background = texture
+
     sceneThreeJs.camera = sceneInit.createCamera(-1,0.5,1);
     sceneInit.insertAmbientLight(sceneThreeJs.sceneGraph);
     sceneInit.insertLight(sceneThreeJs.sceneGraph,Vector3(-1,1,1));
@@ -496,8 +653,10 @@ function initEmptyScene(sceneThreeJs) {
     sceneThreeJs.controls = new THREE.OrbitControls( sceneThreeJs.camera, sceneThreeJs.renderer.domElement );
     sceneThreeJs.controls.target.set(0.5, 0, 0.5);
     sceneThreeJs.controls.update();
-    sceneThreeJs.renderer.setClearColor(0x000000);
 
+    sceneThreeJs.renderer.render(sceneThreeJs.sceneGraph, sceneThreeJs.camera);
+
+    //sceneThreeJs.renderer.setClearColor(0x000000);
 
     window.addEventListener('resize', function(event){onResize(sceneThreeJs);}, false);
 }
@@ -538,51 +697,3 @@ function MaterialRGB(r,g,b) {
     const c = new THREE.Color(r,g,b);
     return new THREE.MeshLambertMaterial( {color:c} );
 }
-//function onDocumentMouseDown(event, sceneThreeJs) {
-    //event.preventDefault();
-
-//    switch ( event.which ) {
-//    	case 1: // left mouse click
-
-//    	 mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-//	 mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-//     	 mouse.unproject( sceneThreeJs.camera );
-//     	 addPoint( mouse );
-//     	 break;
-
-//    	case 3: // right mouse click
-// 	 removeLastPoint();
-//         break;
-//  }
-//}
-//function addPoint( coord ) {
-
-//	var positionAttribtue = geometry.getAttribute( 'position' );
-
-  // add point to buffer data
-  // we use the current count of drawRange as our index
-
-//  var index = geometry.drawRange.count;
-
-//  positionAttribtue.setXYZ( index, coord.x, coord.y, coord.z );
-
-  // only update the part of the buffer that has actually changed
-
-// 	positionAttribtue.updateRange.offset = positionAttribtue.itemSize * index;
-// 	positionAttribtue.updateRange.count =  positionAttribtue.itemSize;
-//  positionAttribtue.needsUpdate = true;
-
-  // increase draw count to draw the new segment
-
-// 	geometry.drawRange.count ++;
-
-//}
-
-//function removeLastPoint() {
-
-//	if ( geometry.drawRange.count > 1 ) {
-
-//  	geometry.drawRange.count --;
-
-//  }
-//}
