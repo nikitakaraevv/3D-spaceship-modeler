@@ -6,6 +6,7 @@ main();
 function main() {
 
     const sceneThreeJs = {
+        baseObject: null,
         sceneGraph: null,
         camera: null,
         renderer: null,
@@ -13,7 +14,8 @@ function main() {
         dessin: true,
         centre: {x: 1, y:1, z:1},
         scale: {x: 0.5, y:0.5, z:0.5},
-        engines: []
+        engines: [],
+        ailes: []
     };
 
     // Les données associées au picking
@@ -27,6 +29,7 @@ function main() {
         selectedObject: null,     // L'objet actuellement selectionné
         selectedPlane: {p:null,n:null}, // Le plan de la caméra au moment de la selection. Plan donné par une position p, et une normale n.
         currentEnginePoints: [],
+        enableRotation: false,
         // Les représentations visuelles associées au picking
         visualRepresentation: {
             sphereSelection:null,    // Une sphère montrant le point d'intersection au moment du picking
@@ -69,7 +72,7 @@ function main() {
     document.addEventListener( 'mouseup', wrapperMouseUp );
 
     // Fonction à appeler lors du déplacement de la souris: translation de l'objet selectionné
-    const wrapperMouseMove = function(event) { mouseEvents.onMouseMove(event,raycaster, pickingData, screenSize, sceneThreeJs,drawingData) };
+    const wrapperMouseMove = function(event) { mouseEvents.onMouseMove(event,raycaster, pickingData, screenSize, sceneThreeJs,drawingData); };
     document.addEventListener( 'mousemove', wrapperMouseMove );
 
     // Fonction de rappels pour le clavier: activation/désactivation du picking par CTRL
@@ -102,6 +105,7 @@ function init3DObjects(sceneThreeJs, pickingData, drawingData) {
     cube.name="cube";
     cube.castShadow = true;
     sceneGraph.add(cube);
+    sceneThreeJs.baseObject = cube;
     pickingData.selectableObjects.push(cube); // Ajout du cube en tant qu'élément selectionnable
     //console.log(cube.scale.x);
 
@@ -133,39 +137,6 @@ function init3DObjects(sceneThreeJs, pickingData, drawingData) {
     drawingData.drawingObjects.push(plane);
     sceneGraph.add(plane);
     
-    for(let i = 0; i < sceneThreeJs.engines.length; i++){
-        var enginePoints = [];
-        for(let j = 0; j < sceneThreeJs.engines[i].length; j++){
-            enginePoints.push(sceneThreeJs.engines[i][j]);
-        }
-        
-        var starShape = new THREE.Shape( enginePoints );//enginePoints
-
-        var extrudeSettings = { amount: 0.2, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: 0.1, bevelThickness: 0.4 };
-
-        var geometry = new THREE.ExtrudeGeometry( starShape, extrudeSettings );
-
-        var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
-        mesh.position.set(0,0,0);
-        sceneGraph.add(mesh);
-    
-    }
-
-    // Create the final object to add to the scene
-    var curveObject = new THREE.Line( geometry, material );
-    sceneGraph.add(curveObject);
-    
-    var starShape = new THREE.Shape( enginePoints );//enginePoints
-
-    var extrudeSettings = { amount: 0.2, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: 0.1, bevelThickness: 0.4 };
-
-    var geometry = new THREE.ExtrudeGeometry( starShape, extrudeSettings );
-
-    var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
-    mesh.position.set(0,0,0);
-    sceneGraph.add(mesh);
-    
-    // add a wireframe to model
     
    
     
@@ -200,19 +171,20 @@ function onKeyDown(event, pickingData, sceneThreeJs,drawingData) {
     const ctrlPressed = event.ctrlKey;
     const shiftPressed = event.shiftKey;
     const keyCode = event.which;
-    console.log(pickingData.selectedObject);
+    //console.log(pickingData.selectedObject);
     // Relachement de ctrl : activation du mode picking
-
+    console.log(keyCode);
     if ( ctrlPressed ) {
         pickingData.currentKey = "CTRL";
         pickingData.enabled = true;
         sceneThreeJs.controls.enabled = false;
     }
-    else if ( shiftPressed ) {
+    else if ( keyCode===16 ||  keyCode ===  18) {
         //sceneThreeJs.sceneGraph.remove(drawingData.line);
         //drawingData.line=null;
         drawingData.drawing3DPoints=[]
-        pickingData.currentKey = "SHIFT";
+        if (keyCode===16) pickingData.currentKey = "SHIFT";
+        else pickingData.currentKey = "OPTION";
         sceneThreeJs.controls.enabled = false;
         pickingData.engineCreation = true;
         pickingData.currentEnginePoints=[];
@@ -228,6 +200,18 @@ function onKeyDown(event, pickingData, sceneThreeJs,drawingData) {
         sceneThreeJs.controls.enabled = false;
         
     }
+    else if( keyCode ===  67) {
+        pickingData.currentKey = "C";
+        pickingData.enabled = true;
+        //sceneThreeJs.controls.enabled = false;
+        
+    }
+    else if ( keyCode === 82  ) {
+        pickingData.currentKey = "R";
+        pickingData.enabled = true;
+        sceneThreeJs.controls.enabled = false;
+    }
+
     
 
 }
@@ -240,17 +224,18 @@ function onKeyUp(event, pickingData,sceneThreeJs,drawingData) {
 
 
     // Relachement de ctrl : fin du picking actuel
-    if ( ctrlPressed===false && ((pickingData.currentKey==="CTRL") || (pickingData.currentKey==="Z")|| (pickingData.currentKey==="DELETE"))) {
+    if ( ctrlPressed===false && ((pickingData.currentKey==="CTRL") || (pickingData.currentKey==="Z")|| (pickingData.currentKey==="DELETE")|| (pickingData.currentKey==="C")||(pickingData.currentKey==="R"))) {
         pickingData.currentKey = null;
         pickingData.enabled = false;
         pickingData.enableDragAndDrop = false;
         pickingData.enableScaling = false;
+        pickingData.enableRotation = false;
         sceneThreeJs.controls.enabled = true;
         pickingData.selectedObject = null;
         pickingData.visualRepresentation.sphereSelection.visible = false;
         pickingData.visualRepresentation.sphereTranslation.visible = false;
     }
-    if ( shiftPressed===false  && pickingData.currentKey==="SHIFT") {
+    else if (  pickingData.currentKey==="SHIFT") {
         pickingData.currentKey = null;
         sceneThreeJs.controls.enabled = true;
         pickingData.engineCreation = false;
@@ -267,10 +252,105 @@ function onKeyUp(event, pickingData,sceneThreeJs,drawingData) {
             var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
             mesh.position.set(0,0,0);
             sceneThreeJs.sceneGraph.add(mesh);
+            sceneThreeJs.baseObject.add(mesh);
             pickingData.selectableObjects.push(mesh);
         }
     
 
+    }
+    else if ( pickingData.currentKey==="OPTION") {
+        
+        pickingData.currentKey = null;
+        sceneThreeJs.controls.enabled = true;
+        pickingData.engineCreation = false;
+        /*
+        if (pickingData.currentEnginePoints.length>2) {
+            sceneThreeJs.engines.push(pickingData.currentEnginePoints);
+       
+            var engineShape = new THREE.Shape( pickingData.currentEnginePoints );//enginePoints
+
+            var extrudeSettings = { amount: 0.2, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: 0.1, bevelThickness: 0.4 };
+
+            var geometry = new THREE.ExtrudeGeometry( engineShape, extrudeSettings );
+
+            var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+            mesh.position.set(0,0,0);
+            sceneThreeJs.sceneGraph.add(mesh);
+            sceneThreeJs.baseObject.add(mesh);
+            pickingData.selectableObjects.push(mesh);
+        }
+        
+        */
+        if (pickingData.currentEnginePoints.length>2) {
+            console.log('object created')
+            sceneThreeJs.ailes.push(pickingData.currentEnginePoints);
+       
+            const ailesShape = new THREE.Shape( pickingData.currentEnginePoints );//enginePoints
+
+
+            let randomPoints = [];
+            for ( var i = 0; i < pickingData.currentEnginePoints.length; i ++ ) {
+                //randomPoints.push( new THREE.Vector3( ( i - 0.5 ) , THREE.Math.randFloat( - 1, 1 ), THREE.Math.randFloat( - 1, 1 ) ) );
+                const point = pickingData.currentEnginePoints[i];
+                randomPoints.push(new THREE.Vector3(point.x*2, point.y*2, 0 ));
+            }
+            const randomSpline =  new THREE.CatmullRomCurve3( randomPoints );
+
+            // Création de la forme extrudée 
+            const extrudeSettings = {
+                steps: 1,
+                bevelEnabled: false,
+                extrudePath: randomSpline
+            };
+
+
+            const extrudeGeometry = new THREE.ExtrudeBufferGeometry( ailesShape, extrudeSettings );
+            const extrudeObject = new THREE.Mesh( extrudeGeometry, MaterialRGB(0.2,0.2,0.2) ) ;
+            extrudeObject.material.side = THREE.DoubleSide; 
+            extrudeObject.position.set(0,0,0);
+            sceneThreeJs.sceneGraph.add( extrudeObject );
+            console.log(extrudeObject);
+            sceneThreeJs.baseObject.add(extrudeObject);
+            pickingData.selectableObjects.push(extrudeObject);
+
+        }
+        
+        /*
+        pickingData.currentKey = null;
+        sceneThreeJs.controls.enabled = true;
+        pickingData.ailesCreation = false;
+        
+        if (pickingData.currentAilesPoints.length>2) {
+            sceneThreeJs.ailes.push(pickingData.currentAilesPoints);
+       
+            const ailesShape = new THREE.Shape( pickingData.currentAilesPoints );//enginePoints
+
+
+            let randomPoints = [];
+            for ( var i = 0; i < 5; i ++ ) {
+                randomPoints.push( new THREE.Vector3( ( i - 4.5 ) , THREE.Math.randFloat( - 1, 1 ), THREE.Math.randFloat( - 1, 1 ) ) );
+            }
+            const randomSpline =  new THREE.CatmullRomCurve3( randomPoints );
+
+            // Création de la forme extrudée 
+            const extrudeSettings = {
+                steps: 6,
+                bevelEnabled: true,
+                extrudePath: randomSpline
+            };
+
+
+            const extrudeGeometry = new THREE.ExtrudeBufferGeometry( ailesShape, extrudeSettings );
+            const extrudeObject = new THREE.Mesh( extrudeGeometry, MaterialRGB(0.9,0.9,0.9) ) ;
+            extrudeObject.material.side = THREE.DoubleSide; 
+            sceneThreeJs.sceneGraph.add( extrudeObject );
+            
+            sceneThreeJs.baseObject.add(extrudeObject);
+            pickingData.selectableObjects.push(extrudeObject);
+
+        }
+    
+        */
     }
 
 }
