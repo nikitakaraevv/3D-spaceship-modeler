@@ -2,15 +2,17 @@
 It's a 3D spaceship modeler where you can easily create a spaceship of your dreams. 
 This project has been done in **JavaScript** language using **ThreeJS** library. 
 
-### Modeling process
-![](gifs/modeling.gif)
-
 ## Getting started
 ` git clone https://github.com/nikitakaraevv/3D-spaceship-modeler `
 
 Then launch *index.html* directly in a web browser.
 
 ## Functionality
+
+### Modeling process
+![](gifs/modeling.gif)
+
+
 There are a lot of different tools that can facilitate the process of spaceship modeling.
 All actions that deal with objects in 3D:
 - drag and drop  - *Ctrl + Select + Mouse Move*
