@@ -3,7 +3,7 @@ It's a 3D spaceship modeler where you can easily create a spaceship of your drea
 This project has been done in **JavaScript** language using **ThreeJS** library. 
 
 ## Getting started
-` git clone https://github.com/nikitakaraevv/MODAL3D `
+` git clone https://github.com/nikitakaraevv/3D-spaceship-modeler `
 
 ## Functionality
 There are a lot of different tools that can facilitate the process of spaceship creation.
