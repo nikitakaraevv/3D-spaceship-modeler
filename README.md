@@ -15,10 +15,10 @@ All actions that deal with objects in 3D:
 - rotate - *R + Select + Mouse Move*
 
 ### Modeling process
-![](spaceship_modeling_process.gif)
+![](gifs/modeling.gif)
 
 ### Animation
-![](spaceship_animation_scene.gif)
+![](gifs/animation.gif)
 
 Tools for object creation:
 - prism creation - *Shift + Draw on the board*
