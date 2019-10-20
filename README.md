@@ -14,6 +14,12 @@ All actions that deal with objects in 3D:
 - change of size - *Z + Select + Mouse Move*
 - rotate - *R + Select + Mouse Move*
 
+### Modeling process
+![](spaceship_modeling_process.gif)
+
+### Animation
+![](spaceship_animation_scene.gif)
+
 Tools for object creation:
 - prism creation - *Shift + Draw on the board*
 - extruded curve creation - *Alt + Draw on the board*
