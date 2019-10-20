@@ -5,7 +5,11 @@ This project has been done in **JavaScript** language using **ThreeJS** library.
 ## Getting started
 ` git clone https://github.com/nikitakaraevv/3D-spaceship-modeler `
 
-Then launch *index.html* directly in a web browser.
+Go to the directory `3D-spaceship-modeler` and launch a python server:
+
+` python3 -m http.server `
+
+Then open the link in a web browser.
 
 ## Functionality
 
