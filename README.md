@@ -3,12 +3,11 @@ It's a 3D spaceship modeler where you can easily create a spaceship of your drea
 This project has been done in **JavaScript** language using **ThreeJS** library. 
 
 ## Getting started
-` git clone https://github.com/nikitakaraevv/3D-spaceship-modeler `
-
-Go to the directory `3D-spaceship-modeler` and launch a python server:
-
-` python3 -m http.server `
-
+```bash
+$ git clone https://github.com/nikitakaraevv/3D-spaceship-modeler
+$ cd 3D-spaceship-modeler
+$ python3 -m http.server
+```
 Then open the link in a web browser.
 
 ## Functionality
